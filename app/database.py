@@ -25,21 +25,21 @@ DATABASE_URL = f"sqlite:///{DATABASE_FILE}"
 connect_args = {"check_same_thread": False}
 
 engine = create_engine(
-  DATABASE_URL,
-  echo=False,
-  connect_args=connect_args,
+    DATABASE_URL,
+    echo=False,
+    connect_args=connect_args,
 )
 
 
 def create_db_and_tables() -> None:
-  """Cria todas as tabelas registradas nos metadados do SQLModel."""
-  SQLModel.metadata.create_all(engine)
+    """Cria todas as tabelas registradas nos metadados do SQLModel."""
+    SQLModel.metadata.create_all(engine)
 
 
 def get_session() -> Generator[Session, None, None]:
-  """
-  Dependency do FastAPI que fornece uma sessão de banco de dados por
-  requisição, garantindo o fechamento correto da conexão ao final.
-  """
-  with Session(engine) as session:
-    yield session
+    """
+    Dependency do FastAPI que fornece uma sessão de banco de dados por
+    requisição, garantindo o fechamento correto da conexão ao final.
+    """
+    with Session(engine) as session:
+        yield session
