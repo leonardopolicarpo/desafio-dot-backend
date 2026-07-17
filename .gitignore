@@ -1,0 +1,19 @@
+# Ambientes Virtuais (uv / venv)
+.venv/
+.env
+
+# Caches do Python e do uv
+__pycache__/
+*.py[cod]
+*$py.class
+.cache/uv/
+.pytest_cache/
+
+# Banco de Dados Local (SQLite do MVP)
+*.db
+*.sqlite3
+
+# Arquivos de IDE e Sistema
+.vscode/
+.idea/
+.DS_Store
