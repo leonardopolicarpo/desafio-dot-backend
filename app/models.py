@@ -146,3 +146,30 @@ class MensagemRead(MensagemBase):
   """Payload de resposta (GET) para uma Mensagem."""
 
   id: uuid.UUID
+
+
+# ---------------------------------------------------------------------------
+# CHAT (rota pública /api/v1/chat)
+# ---------------------------------------------------------------------------
+
+class ChatRequest(SQLModel):
+  """Payload de entrada da rota pública de chat."""
+
+  tutor_id: uuid.UUID = Field(description="ID do Tutor com quem o usuário está conversando.")
+  sessao_id: str = Field(
+    min_length=1,
+    max_length=255,
+    description="Identificador da sessão de conversa (agrupa o histórico do chat).",
+  )
+  mensagem: str = Field(
+    min_length=1,
+    description="Texto da mensagem enviada pelo usuário.",
+  )
+
+
+class ChatResponse(SQLModel):
+  """Payload de resposta da rota pública de chat."""
+
+  tutor_id: uuid.UUID
+  sessao_id: str
+  resposta: str

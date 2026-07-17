@@ -37,8 +37,17 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlmodel import Session, select
 
+from app.agent import executar_conversa
 from app.database import create_db_and_tables, get_session
-from app.models import Tutor, TutorCreate, TutorRead, TutorUpdate
+from app.models import (
+  ChatRequest,
+  ChatResponse,
+  Mensagem,
+  Tutor,
+  TutorCreate,
+  TutorRead,
+  TutorUpdate,
+)
 
 # ---------------------------------------------------------------------------
 # Logging
@@ -409,3 +418,71 @@ async def excluir_tutor(
   session.delete(tutor)
   session.commit()
   return None
+
+
+# ---------------------------------------------------------------------------
+# Rota publica -- Chat com o Tutor (pipeline agentico via pydantic-ai)
+# ---------------------------------------------------------------------------
+JANELA_HISTORICO_MENSAGENS = 6
+ 
+ 
+@app.post(
+  "/api/v1/chat",
+  response_model=ChatResponse,
+  tags=["Chat"],
+)
+async def chat(
+  chat_in: ChatRequest,
+  session: Session = Depends(get_session),
+) -> ChatResponse:
+  """Rota publica de conversacao com um Tutor."""
+  tutor = session.get(Tutor, chat_in.tutor_id)
+  if tutor is None:
+    raise HTTPException(
+      status_code=status.HTTP_404_NOT_FOUND,
+      detail="Tutor nao encontrado.",
+    )
+
+  if not tutor.status:
+    raise HTTPException(
+      status_code=status.HTTP_403_FORBIDDEN,
+      detail="Este tutor esta inativo no momento.",
+    )
+
+  query_historico = (
+    select(Mensagem)
+    .where(Mensagem.sessao_id == chat_in.sessao_id)
+    .where(Mensagem.tutor_id == chat_in.tutor_id)
+    .order_by(Mensagem.timestamp.desc())
+    .limit(JANELA_HISTORICO_MENSAGENS)
+  )
+  historico_recente_desc = session.exec(query_historico).all()
+  historico_cronologico = list(reversed(historico_recente_desc))
+
+  resposta_ia = await executar_conversa(
+    tutor=tutor,
+    mensagem_usuario=chat_in.mensagem,
+    historico_mensagens=historico_cronologico,
+  )
+
+  mensagem_usuario_db = Mensagem(
+    sessao_id=chat_in.sessao_id,
+    tutor_id=chat_in.tutor_id,
+    role="user",
+    content=chat_in.mensagem,
+  )
+  mensagem_ia_db = Mensagem(
+    sessao_id=chat_in.sessao_id,
+    tutor_id=chat_in.tutor_id,
+    role="assistant",
+    content=resposta_ia,
+  )
+  session.add(mensagem_usuario_db)
+  session.add(mensagem_ia_db)
+  session.commit()
+
+  return ChatResponse(
+    tutor_id=chat_in.tutor_id,
+    sessao_id=chat_in.sessao_id,
+    resposta=resposta_ia,
+  )
