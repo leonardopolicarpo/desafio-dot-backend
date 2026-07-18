@@ -280,14 +280,17 @@ Códigos de erro relevantes desta rota:
 
 ---
 
-## 🛠️ Qualidade e Padronização Estilística (Requisito 5.c)
+## 🛠️ Qualidade, Padronização e Testes (Requisito 5.c)
 
-Para garantir a manutenibilidade, legibilidade e conformidade com as boas práticas de engenharia do ecossistema Python moderno, o repositório de backend possui ferramentas de análise estática integradas de forma nativa ao fluxo do gerenciador de pacotes `uv`:
+Para garantir a manutenibilidade, resiliência e conformidade com as boas práticas de engenharia do ecossistema Python moderno, o repositório possui ferramentas de análise estática e testes automatizados integrados de forma nativa ao fluxo do gerenciador de pacotes `uv`:
 
-- **Linter e Formatador (Ruff):** Utilizamos o `ruff` para impor padronização estilística (PEP 8) e caçar bugs em tempo de desenvolvimento.
-- **Validação de Código:** 
-  - Para auditar a qualidade e sintaxe: `uv run ruff check app/`
-  - Para aplicar correções e formatação de estilo automáticas: `uv run ruff format app/`
+- **Linter e Formatador (Ruff):** Utilizamos o `ruff` para impor padronização estilística (PEP 8) e mitigar bugs em tempo de desenvolvimento.
+- **Testes Automatizados (Pytest):** Implementação de testes de integração na rota crítica de conversação (`/api/v1/chat`), utilizando um banco SQLite em memória isolado para simular o comportamento de regras de negócio (como bloqueio de tutores inativos e injeção de histórico).
+
+### Comandos de Execução:
+- **Auditar qualidade e sintaxe:** `uv run ruff check app/`
+- **Aplicar formatação automática:** `uv run ruff format app/`
+- **Executar a suíte de testes:** `uv run pytest tests/`
 
 ---
 

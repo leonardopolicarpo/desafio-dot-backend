@@ -18,7 +18,14 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["app"]
 
+[tool.pytest.ini_options]
+filterwarnings = [
+  "ignore::DeprecationWarning",
+]
+
+
 [dependency-groups]
 dev = [
+  "pytest>=9.1.1",
   "ruff>=0.15.22",
 ]
